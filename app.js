@@ -1,12 +1,20 @@
 var express = require('express');
+var mongoose = require('mongoose');
+var passport = require('passport');
+var expressSession = require('express-session');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var flash = require('connect-flash');
 
-var routes = require('./routes/index');
-var users = require('./routes/users');
+var routes = require('./routes/index')(passport);
+var initPassport = require('./passport/init');
+var dbConfig = require('./confs/db.js');
+
+// Connect to the mongo database
+mongoose.connect(dbConfig.url);
 
 var app = express();
 
@@ -22,8 +30,22 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Use flash messages
+app.use(flash());
+
+// Let's use express sessions and passport framework for auth
+app.use(expressSession({
+  secret: 'topSecretKey',
+  resave: true,
+  saveUninitialized: true
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Initialize Passport
+initPassport(passport);
 app.use('/', routes);
-app.use('/users', users);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
