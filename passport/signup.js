@@ -33,10 +33,11 @@ module.exports = function (passport) {
 
             // save the user
             newUser.save(function(err) {
-              if (err){
+              if (err) {
                 console.log('Error in Saving user: '+err);
                 throw err;
               }
+
               console.log('User Registration succesful');
               return done(null, newUser);
             });
